@@ -1,0 +1,136 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2759
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Sub StockAnalysisVBA()\
+\
+    ' Here I Declare worksheet and workbook as variables so I can make changes to the entire sheet/book\
+    Dim headers() As Variant\
+    Dim MainWs As Worksheet\
+    Dim wb As Workbook\
+\
+    Set wb = ActiveWorkbook\
+\
+    ' This is to recreate the headers needed for the workbook\
+    headers() = Array("<ticker>", "<date>", "<open>", "<high>", "<low>", "<close>", "<vol>", "", "Ticker", "Yearly Change", "Percent Change", "Total Stock Volume", " ", " ", "Ticker", "Value")\
+\
+    For Each MainWs In wb.Sheets\
+        With MainWs\
+            'This loop is to create the first row of headers and style them.\
+            .Rows(1).Value = " "\
+            For i = LBound(headers()) To UBound(headers())\
+                .Cells(1, i + 1).Value = headers(i)\
+            Next i\
+            .Rows(1).VerticalAlignment = xlCenter\
+            .Rows(1).HorizontalAlignment = xlHAlignLeft\
+            \
+            'Now I am listing all the things that need to be given as variables in this code upfront\
+            Dim Ticker_Name As String\
+            Ticker_Name = " "\
+            Dim Total_Ticker_Volume As Double\
+            Total_Ticker_Volume = 0\
+            Dim Start_Price As Double\
+            Start_Price = 0\
+            Dim End_Price As Double\
+            End_Price = 0\
+            Dim Yearly_Price_Change As Double\
+            Yearly_Price_Change = 0\
+            Dim Yearly_Price_Change_Percent As Double\
+            Yearly_Price_Change_Percent = 0\
+            Dim Max_Ticker_Name As String\
+            Max_Ticker_Name = " "\
+            Dim Max_Percent As Double\
+            Max_Percent = 0\
+            Dim Min_Percent As Double\
+            Min_Percent = 0\
+            Dim Max_Volume_Ticker_Name As String\
+            Max_Volume_Ticker_Name = " "\
+            Dim Max_Volume As Double\
+            Max_Volume = 0\
+            Dim Summary_Table_Row As Long\
+            Summary_Table_Row = 2\
+            Dim Lastrow As Long\
+            Lastrow = MainWs.Cells(Rows.Count, 1).End(xlUp).Row\
+            Start_Price = MainWs.Cells(i, 3).Value\
+            \
+\
+            ' I want the script to loop itself starting with row 2 to the very last row.\
+           For i = 2 To Lastrow\
+           \
+           ' Keeping track of the new values when the ticker name changes in the sheet.\
+           If MainWs.Cells(i + 1, 1).Value <> MainWs.Cells(i, 1).Value Then\
+            Ticker_Name = MainWs.Cells(i, 1).Value\
+            \
+            \
+            End_Price = MainWs.Cells(i, 6).Value\
+            Yearly_Price_Change = End_Price - Start_Price\
+            \
+            \
+        \
+        ' The starting price cannot be a zero\
+        If Start_Price <> 0 Then\
+            Yearly_Price_Change_Percent = (Yearly_Price_Change / Start_Price) * 100\
+        End If\
+        'Total_Ticker is set to 0 then we add the values of column 7 each time\
+        Total_Ticker_Volume = Total_Ticker_Volume + MainWs.Cells(i, 7).Value\
+        \
+        'This is used to show the the ticker names and price changes\
+        MainWs.Range("I" & Summary_Table_Row).Value = Ticker_Name\
+        MainWs.Range("J" & Summary_Table_Row).Value = Yearly_Price_Change\
+        'The next lines are to change the color of the columns depending on whether they're greater than or less than 0\
+        If Yearly_Price_Change > 0 Then\
+            MainWs.Range("J" & Summary_Table_Row).Interior.ColorIndex = 4\
+        ElseIf Yearly_Price_Change <= 0 Then\
+            MainWs.Range("J" & Summary_Table_Row).Interior.ColorIndex = 3\
+        End If\
+        'Convert the yearly price change to a string and display it in its own column.\
+        MainWs.Range("K" & Summary_Table_Row).Value = CStr(Yearly_Price_Change_Percent) & "%"\
+        'Keep track of the Total ticker volume\
+        MainWs.Range("L" & Summary_Table_Row).Value = Total_Ticker_Volume\
+        Summary_Table_Row = Summary_Table_Row + 1\
+\
+        Start_Price = MainWs.Cells(i + 1, 3).Value\
+        \
+        'Determining the min and max percent change\
+        If Yearly_Price_Change_Percent > Max_Percent Then\
+            Max_Percent = Yearly_Price_Change_Percent\
+            Max_Ticker_Name = Ticker_Name\
+        ElseIf Yearly_Price_Change_Percent < Min_Percent Then\
+            Min_Percent = Yearly_Price_Change_Percent\
+            Min_Ticker_Name = Ticker_Name\
+        End If\
+        'Adjusting the ticker colume to keep up with the value of max volume\
+        If Total_Ticker_Volume > Max_Volume Then\
+            Max_Volume = Total_Ticker_Volume\
+            Max_Volume_Ticker_Name = Ticker_Name\
+        End If\
+        'Setting the values of percent change and the total volume to 0\
+        Yearly_Price_Change_Percent = 0\
+        Total_Ticker_Volume = 0\
+    Else\
+        Total_Ticker_Volume = Total_Ticker_Volume + MainWs.Cells(i, 7).Value\
+    End If\
+Next i\
+\
+    \
+\
+            ' This lets me add the values to the rows required to change as long as changing types to strings where needed\
+            .Range("P2").Value = (CStr(Max_Percent) & "%")\
+            .Range("P3").Value = (CStr(Min_Percent) & "%")\
+            .Range("O2").Value = Max_Ticker_Name\
+            .Range("O3").Value = Min_Ticker_Name\
+            .Range("O4").Value = Max_Volume_Ticker_Name\
+            .Range("P4").Value = Max_Volume\
+            .Range("N2").Value = "Greatest % Increase"\
+            .Range("N3").Value = "Greatest % Decrease"\
+            .Range("N4").Value = "Greatest Total Volume"\
+\
+        End With\
+    Next MainWs\
+\
+End Sub\
+\
+}
