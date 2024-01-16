@@ -5,3 +5,4 @@ Previous code was used as guidance from https://github.com/emmanuelmartinezs/sto
 I also referenced https://github.com/cmac18/Analysis-of-Stock-Market-Data.git to develop this VBA script.
 Open AI, via ChatGPT 3.5 was used to help debug my code as well as provide spellcheck. 
 The code was added to the above GitHub repository.
+ 
